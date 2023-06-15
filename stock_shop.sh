@@ -6,38 +6,48 @@ gn=$1
 #PATHS
 
 #probe shop
-ps="~/probe_shop/probes"
+ps="$HOME/probe_shop"
+
+#probe shop probes
+psp="$ps/probes"
 
 #gene item
-gi="~/probe_shop/probes/$gn"
+gi="$psp/$gn"
 
-mkdir -p "$gi"
-bio fetch $gn > $gi/$gn.ncbi_report.txt
+# creates directories for subsequent files related to this probe target
+mkdir -p "$gi/primary_reports"
+mkdir -p "$gi/processed_report_components"
+mkdir -p "$gi/hcr_probegen_reports"
+mkdir -p "$gi/hcr_probes_all_hairpins"
 
+# shortened 
+pr="$gi/primary_reports"
+prc="$gi/processed_report_components"
+hpr="$gi/hcr_probegen_reports"
+hpa="$gi/hcr_probes_all_hairpins"
 
-#sleep 0.5s
-#bio fetch $gene_name | bio fasta --type CDS > ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.txt
-#sleep 0.5s
-#bio fetch $gene_name --format gff > ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.annotations.gff3
-#sleep 0.5s
+# obtains ncbi report
+bio fetch $gn > $pr/$gn.ncbi_report.txt
 
-#removing header and whitespace from CDS. gene annotation file is stored separately as gff3
-#cat ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.txt | tail -n +2 | tr -d " \t\n\r" > ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.cleaned.txt
-#mkdir -p ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/csv
-#mkdir -p ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/csv
-#mkdir -p ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probegen_standard_report
+# obtains annotation for this probe target
+bio fetch $gn --format gff > $gi/lp.v2.$pr.annotation_report.gff3
 
+# obtains CDS sequence of probe target
+bio fetch $gn | bio fasta --type CDS > $pr/$gn.cds_report.txt
+
+# remove headers and whitespace from cds_report
+cat $pr/$gn.cds_report.txt | tail -n +2 | tr -d " \t\n\r" > $prc/$gn.cleaned.txt
 
 #cp ~/yl_pictus-2/lp_transcriptome/csv_to_xlsx.py ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/csv_to_xlsx.py
 
-#for i in "b1" "b2" "b3" "b4" "b5"
-#do
-  # python ~/yl_pictus-2/lp_transcriptome/insitu_probe_generator/make_probe.py "sp" $gene_name $i ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.cleaned.txt > ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probegen_standard_report/lp.v2.$gene_name.$i.probegen_standard_report.txt
-  # begin=$(cat ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probegen_standard_report/lp.v2.$gene_name.$i.probegen_standard_report.txt | grep -Fn "Pool name, Sequence" | cut -d ":" -f 1)
-  # end_num=$(cat ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probegen_standard_report/lp.v2.$gene_name.$i.probegen_standard_report.txt | grep -Fn "Figure Layout of Probe Sequences" | cut -d ":" -f 1)
-  # end=$(expr "$end_num" - 3)
-  # cat ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probegen_standard_report/lp.v2.$gene_name.$i.probegen_standard_report.txt | sed -n "$begin","$end"p | sed 's/ *, */,/' > ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/lp.v2.$gene_name.$i.opools_order.csv
-  # python ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/csv_to_xlsx.py ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/lp.v2.$gene_name.$i.opools_order.csv "$gene_name" "$i"
+for i in "b1" "b2" "b3" "b4" "b5"
+do
+   python "$ps"/ipg/make_probe.py "sp" $gn $i $prc/$gn.cleaned.txt > $hpr/$i.$gene_name.probegen_standard_report.txt
+   begin=$(cat $hpr/$i.$gene_name.probegen_standard_report.txt | grep -Fn "Pool name, Sequence" | cut -d ":" -f 1)
+   end_num=$(cat $hpr/$i.$gene_name.probegen_standard_report.txt | grep -Fn "Figure Layout of Probe Sequences" | cut -d ":" -f 1)
+   end=$(expr "$end_num" - 3)
+   cat $hpr/lp.v2.$gene_name.$i.probegen_standard_report.txt | sed -n "$begin","$end"p | sed 's/ *, */,/' > $hpa/lp.v2.$gene_name.$i.opools_order.csv
+   python ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/csv_to_xlsx.py ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/lp.v2.$gene_name.$i.opools_order.csv "$gene_name" "$i"
 #done
 
 #mv ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/lp*order.csv ~/yl_pictus-2/lp_transcriptome/sp_transcripts_of_interest_test/lp.v2.$gene_name/lp.v2.$gene_name.hcr_probes_all_hairpins/csv
