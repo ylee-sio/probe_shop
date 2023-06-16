@@ -1,0 +1,5 @@
+These are the current probes we have in stock (including the pools generated with this run):
+
+accession,hairpin,pool,common_gene_name,ref_species
+XM_054904285.1,b1,1,meh,lp
+ 

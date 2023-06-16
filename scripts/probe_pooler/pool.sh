@@ -26,7 +26,7 @@ else
    echo "First run."
 fi
 # db should be where ever all probe directories are located
-db="~/probe_pooler/.probes"
+db="$psp"
 
 cat $form | cut -d "," -f 3 | sed 1d > $ppt/temp_pool.txt
 pool_length=$(cat $ppt/temp_pool.txt | sort | uniq | wc -l)
@@ -34,7 +34,7 @@ pool_length=$(cat $ppt/temp_pool.txt | sort | uniq | wc -l)
 for (( p=1; p<=$pool_length; p++ ))
    
    do
-   last_probe_num=$(ls $pp/.all_probe_pools | wc -w) 
+   last_probe_num=$(ls $ppal | wc -w) 
    new_probe_num=$(expr $last_probe_num + 1)
    pool_id=HL_HCR_PSET_"$new_probe_num"
    
@@ -42,19 +42,19 @@ for (( p=1; p<=$pool_length; p++ ))
    pptsp="$ppt/subpool_000$p"
 
    subsession_record_num=$(shuf -i 100000000-999999999 -n 1)
-   csvgrep -c pool -m "$p" $form > $ppt/"subpool_000$p"/"$subsession_record_num"_pool_map.csv
+   csvgrep -c pool -m "$p" $form > $pptsp/"$subsession_record_num"_pool_map.csv
    cat $pptsp/"$subsession_record_num"_pool_map.csv | cut -d "," -f 1 | sed 1d > $pptsp/temp_acc.txt
    cat $pptsp/"$subsession_record_num"_pool_map.csv | cut -d "," -f 2 | sed 1d > $pptsp/temp_hp.txt
    cat $pptsp/"$subsession_record_num"_pool_map.csv | cut -d "," -f 3 | sed 1d > $pptsp/temp_pool.txt
    cat $pptsp/"$subsession_record_num"_pool_map.csv | cut -d "," -f 4 | sed 1d > $pptsp/temp_genenames.txt
    
    temp_acc_length=$(cat $pptsp/temp_acc.txt | wc -l)
-   paste -d "_" $pptsp/temp_acc.txt $pptsp/temp_hp.txt > $pptsp/temp_combos.txt
-
+   paste -d "." $pptsp/temp_hp.txt $pptsp/temp_acc.txt > $pptsp/temp_combos.txt
+echo "******************************** CHECK 1 ******************************************"
    for (( c=1; c<=$temp_acc_length; c++ ))
       do
 	     temp_acc_search_term=$(sed $c'q;d' $pptsp/temp_acc.txt)
-        temp_genename=$(sed $c'q;d' $pptsp/temp_genenames.txt)
+             temp_genename=$(sed $c'q;d' $pptsp/temp_genenames.txt)
 	     temp_combo_search_term=$(sed $c'q;d' $pptsp/temp_combos.txt)
 
         if [ $first_run_pass -gt 1 ]
@@ -77,23 +77,23 @@ for (( p=1; p<=$pool_length; p++ ))
                   then
                   echo "Stopped."
                   echo "Your session ID is $session_record_num."
-                  cp ~/probe_pooler/"$session_record_num"_duplicates.txt ~/"$session_record_num"_duplicates.txt 
+                  cp $pp/"$session_record_num"_duplicates.txt ~/"$session_record_num"_duplicates.txt 
                   echo "$session_record_num"_duplicates.txt has been placed in your home folder.
                   echo "Please use the info in the file to remove duplicates from your current probe request. Update your probe request sheet and try again."
-                  rm -rf ~/probe_pooler/.tmp/*
-                  rm -rf ~/probe_pooler/.all_probe_pools/"$session_record_num"*
-                  ls ~/probe_pooler/.all_probe_pools/*/.tmp/*temp_XM* | sort | uniq > .current_total_probe_paths_list.txt
-                  ls ~/probe_pooler/.all_probe_pools/*/.tmp/*temp_XM* | cut -d "/" -f 6 | sort | uniq > .current_total_probe_pools_list.txt
+                  rm -rf $ppt/*
+                  rm -rf $ppal/"$session_record_num"*
+                  ls $ppal/*/.tmp/*temp_XM* | sort | uniq > .current_total_probe_paths_list.txt
+                  ls $ppal/*/.tmp/*temp_XM* | cut -d "/" -f 6 | sort | uniq > .current_total_probe_pools_list.txt
                   exit 0
                fi       
             fi
          else
             echo "Processed $temp_combo_search_term."
          fi
-   cp $psp/$temp_acc_search_term/*/*all*/csv/*"$temp_combo_search_term"* $pptsp/temp_$temp_combo_search_term.csv
+        cp $psp/$temp_acc_search_term/*all*/csv/*"$temp_combo_search_term"* $pptsp/temp_$temp_combo_search_term.csv
 	sed 1d $pptsp/*temp_$temp_combo_search_term*.csv > $pptsp/$temp_combo_search_term.temp_cleaned.csv
    done
-   
+echo "******************************** CHECK 2 ******************************************"
    mkdir $pptsp/.tmp
    cat $pptsp/*.temp_cleaned.csv > $pptsp/temp_subpool_1.csv
    awk -v pool_name="$pool_id" '$1=pool_name' FS=, OFS=, $pptsp/temp_subpool_1.csv > $pptsp/"$subsession_record_num"_final_subpool.csv
@@ -133,7 +133,7 @@ sed -i -e '$a\Requestor: '$username message.txt
 sed -i -e '$a\Supervisor/PI: '$super message.txt
 sed -i -e '$a\*****************************************************************************************************' message.txt
 sed -i -e '$a\Estimated price: '$total_session_price message.txt
-num_pools=$(ls ~/probe_pooler/.all_probe_pools | grep "$session_record_num" | wc -l)
+num_pools=$(ls $ppal | grep "$session_record_num" | wc -l)
 sed -i -e '$a\Number of pools generated: '$num_pools message.txt
 num_genes=$(ls $ppal/$session_record_num*/"$session_record_num"_pool_content_mapping.csv | parallel "sed 1d {}" | sort | uniq | wc -l)
 sed -i -e '$a\Total number of probes pooled in session: '$num_genes message.txt
@@ -148,7 +148,7 @@ sed -i -e '$a\Unique numbers and IDs generated at this point in the pipeline wil
 sed -i -e '$a\DO NOT attempt to rename or reorganize files in this directory.' message.txt
 sed -i -e '$a\This message has been auto generated with probe_pooler_v1 on pictus-2l.' message.txt
 
-unique_probes_update=$(ls $ppal/*/*content* | parallel "sed 1d {}" | sort | uniq)
+#unique_probes_update=$(ls $ppal/*/*content* | parallel "sed 1d {}" | sort | uniq)
 printf "$unique_probes_update" > probe_inventory_update.txt
 sed -i '1s/^/accession,hairpin,pool,common_gene_name,ref_species\n/' probe_inventory_update.txt
 sed -i '1s/^/\n/' probe_inventory_update.txt
@@ -187,18 +187,19 @@ echo "YOUR POOL RECEIPT NUMBER: $receipt_record_num"
 
 #add additional data to final data package
 cp probe_inventory_update.txt $session_record_num/probe_inventory_update.txt
-cat $form | sed 1d | cut -d "," -f 1 | parallel -j 2 "cp -r ~/probe_pooler/.probes/{} $session_record_num" 
+cat $form | sed 1d | cut -d "," -f 1 | parallel -j 2 "cp -r $psp/{} $session_record_num" 
 
 mv message.txt $session_record_num
 mv total_session_price.txt $session_record_num
-pigz -9 -p4  $session_record_num
-cp $session_record_num.gz $ps/resources/probe_pool_records
-mv $session_record_num.gz ~/OneDrive/probe_pool_archives
+
+zip -rq $session_record_num.zip $session_record_num
+cp $session_record_num.zip $ps/resources/probe_pool_archives
+mv $session_record_num.zip ~/OneDrive/probe_pool_archives
 
 echo "A copy of $session_record_num has been placed in HOME > probe_shop > resources > probe_pool_records."
 echo "If you are generating probe pools locally, simply copy $session_record_num onto a flash drive and order probes using those files."
 
-onedrive --no-remote-delete --upload-only --single-directory probe_pool_archives
+onedrive --synchronize --upload-only --single-directory probe_pool_archives
 
 #cat message.txt | mail -s "probe pooling receipt: $receipt_record_num" -A "$session_record_num.zip" -A probe_inventory_update.txt labhamdoun@gmail.com
 #cat message.txt | mail -s "probe pooling receipt: $receipt_record_num" -A "$session_record_num.zip" -A probe_inventory_update.txt "$user_email_address"
@@ -206,6 +207,6 @@ onedrive --no-remote-delete --upload-only --single-directory probe_pool_archives
 
 rm -rf $session_record_num*
 rm -rf probe_inventory_update.txt
-mv $form ~/probe_pooler/.past_request_forms/$session_record_num.$form
+mv $form $pp/.past_request_forms/$session_record_num.$form
 
 exit

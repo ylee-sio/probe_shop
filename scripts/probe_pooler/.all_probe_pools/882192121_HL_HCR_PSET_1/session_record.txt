@@ -1,0 +1,5 @@
+session_record_num: 882192121
+subsession_record_num: 231281712
+estimated_price: 0
+timestamp: Fri Jun 16 05:07:38 2023
+user: yl
