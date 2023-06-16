@@ -1,5 +1,0 @@
-session_record_num: 913170430
-subsession_record_num: 429798385
-estimated_price: 0
-timestamp: Fri Jun 16 05:24:34 2023
-user: yl

@@ -1,5 +1,0 @@
-session_record_num: 817408102
-subsession_record_num: 724953776
-estimated_price: 18.90
-timestamp: Fri Jun 16 05:56:51 2023
-user: yl
