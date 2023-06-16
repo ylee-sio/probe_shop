@@ -1,4 +1,4 @@
-mamba install zip csvkit
+mamba install zip csvkit ncbi-datasets-cli
 
 # install onedrive for ubuntu
 # follow instructions here: https://github.com/abraunegg/onedrive/blob/master/docs/ubuntu-package-install.md#distribution-ubuntu-2004
