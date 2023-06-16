@@ -3,15 +3,17 @@
 # Get the assembly report if you dont already have one. This contains summaries of all genomes on NCBI. This is used to find relevant information desired species.
 #wget https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_refseq.txt -O ~/probe_shop/resources/assembly_summary_refseq.txt 
 
-#genus=$1
-#species=$2
+#for example, the taxon id number for Lytechinus pictus is 7653
+taxon_id_number=$1
+species_initial=$2
 
-# refseq summary
-#ftp_link=$(cat ~/probe_shop/resources/assembly_summary_refseq.txt | grep "$genus $species" | cut -f 20)
-#wget -r -A '$ftp_link/*gff.gz' "$ftp_link" 
+# get gtf file of interest. for some reason, cant get ncbi datasets to specify output path
+cd ~/probe_shop/resources
+datasets download genome taxon $taxon_id_number --include gff3
+unzip ncbi_dataset.zip
+gtf_location=$(find ncbi_dataset -name *.gff)
+mv $gtf_location ~/probe_shop/resources
+rm -rf ncbi_dataset*
 
-
-#annotation file can be gtf or gff
-anno=~/probe_shop/resources/*gtf
-species_initial=$1
-gffread --table @id $anno | grep XM > ~/probe_shop/resources/"$species_initial".transcript.accessions.txt 
+agat_convert_sp_gff2gtf.pl --gff genomic.gff -o genomic.gtf
+gffread --table @id genomic.gtf | grep XM > ~/probe_shop/resources/"$species_initial".transcript.accessions.txt 
