@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#for parallelization and http429 error
+#r1=$(shuf -i 0-1 -n1)
+#r2=$(shuf -i 1000-9999 -n1)
+#echo "$r1.$r2"
+#sleep $r1.$r2
+
+
 #gene_name
 gn=$1
 
@@ -51,6 +58,6 @@ do
    python "$pss"/csv_to_xlsx.py $hpa/csv/$i.$gn.opools_order.csv "$gn" "$i" "$hpa/"
 done
 
-echo "***** Probes generated for $gene_name *****"
+echo "***** Probes generated for $gn *****"
 
 
