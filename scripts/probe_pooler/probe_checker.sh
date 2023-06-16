@@ -1,5 +1,9 @@
 #!/bin/bash
 # Use this script to check whether or not accessions in a probe request form are available to order.
+ps="$HOME/probe_shop"
+psp="$ps/probes"
+pss="$ps/scripts"
+pp="$pss/probe_pooler"
 
 # User input for probe request form
 form=$1
@@ -14,7 +18,7 @@ pool=$(cat $1 | sed 1d | cut -d "," -f 3 | sed 1d)
 
 for i in $acc
 do
-if [ -d "$HOME/probe_pooler/.probes/$i" ]
+if [ -d "$psp/$i" ]
    then
    echo "$i exists"
 else
