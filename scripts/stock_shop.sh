@@ -7,9 +7,10 @@ gn=$1
 
 #probe shop
 ps="$HOME/probe_shop"
-
 #probe shop probes
 psp="$ps/probes"
+#probe shop scripts
+pss="$ps/scripts"
 
 #gene item
 gi="$psp/$gn"
@@ -47,8 +48,9 @@ do
    end_num=$(cat $hpr/$i.$gn.probegen_report.txt | grep -Fn "Figure Layout of Probe Sequences" | cut -d ":" -f 1)
    end=$(expr "$end_num" - 3)
    cat $hpr/$i.$gn.probegen_report.txt | sed -n "$begin","$end"p | sed 's/ *, */,/' > $hpa/csv/$i.$gn.opools_order.csv
-   python "$ps"/csv_to_xlsx.py $hpa/csv/$i.$gn.opools_order.csv "$gn" "$i" "$hpa/"
+   python "$pss"/csv_to_xlsx.py $hpa/csv/$i.$gn.opools_order.csv "$gn" "$i" "$hpa/"
 done
 
 echo "***** Probes generated for $gene_name *****"
+
 
